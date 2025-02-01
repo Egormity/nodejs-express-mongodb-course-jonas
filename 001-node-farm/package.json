@@ -1,0 +1,17 @@
+{
+    "name": "001-node-farm",
+    "version": "1.0.0",
+    "description": "Learning node.js",
+    "main": "index.js",
+    "scripts": {
+        "start": "nodemon index.js"
+    },
+    "author": "Egormity",
+    "license": "ISC",
+    "devDependencies": {
+        "nodemon": "^3.1.9"
+    },
+    "dependencies": {
+        "slugify": "^1.6.6"
+    }
+}

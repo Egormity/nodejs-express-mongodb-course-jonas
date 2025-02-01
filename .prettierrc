@@ -1,6 +1,5 @@
 {
-    // "plugins": ["@trivago/prettier-plugin-sort-imports"],
-
+    "filepath": "",
     "printWidth": 110,
     "tabWidth": 4,
     "semi": true,
@@ -17,24 +16,5 @@
     "htmlWhitespaceSensitivity": "css",
     "endOfLine": "lf",
     "embeddedLanguageFormatting": "auto",
-    "singleAttributePerLine": true
-
-    // "importOrder": [
-    //     "<THIRD_PARTY_MODULES>",
-    //     "^@/app/apis(.*)$",
-    //     "^@/app/navigation(.*)$",
-    //     "^@/app/store(.*)$",
-    //     "^@/pages/(.*)$",
-    //     "^@/assets/assets(.*)$",
-    //     "^@/assets/constants(.*)$",
-    //     "^@/assets/hooks(.*)$",
-    //     "^@/assets/ui(.*)$",
-    //     "^@/assets/utils(.*)$",
-    //     "^@/widgets/(.*)$",
-    //     "^../(.*)$",
-    //     "^./(.*)$",
-    //     "(.scss)$"
-    // ],
-    // "importOrderSeparation": true,
-    // "importOrderSortSpecifiers": true
+    "singleAttributePerLine": true,
 }

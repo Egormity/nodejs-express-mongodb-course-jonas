@@ -2,6 +2,10 @@ const fs = require("fs");
 const http = require("http");
 const url = require("url");
 
+const slugify = require("slugify");
+
+const replaceTemplate = require(`${__dirname}/modules/replaceTemplate`);
+
 // --- Sync files ---
 // const textIn = fs.readFileSync("./txt/input.txt", "utf-8")
 // const textOut = `This is what we know about the avocados: ${textIn}.\nCreated on ${Date.now()}`
@@ -23,19 +27,6 @@ const url = require("url");
 // })
 
 // --- http ---
-const replaceTemplate = (template, product) => {
-    let output = template; 
-    output = output.replace(/{%NAME%}/g, product.productName);
-    output = output.replace(/{%IMAGE%}/g, product.image);
-    output = output.replace(/{%PRICE%}/g, product.price);
-    output = output.replace(/{%FROM%}/g, product.from);
-    output = output.replace(/{%NUTRIENTS%}/g, product.nutrients);
-    output = output.replace(/{%QUANTITY%}/g, product.quantity);
-    output = output.replace(/{%ID%}/g, product.id);
-    if (!product.organic) output = output.replace(/{%NOT_ORGANIC%}/g, "not_organic");
-    return output;
-}
-
 const templateOverview = fs.readFileSync(`${__dirname}/templates/template-overview.html`, "utf-8");
 const templateCard = fs.readFileSync(`${__dirname}/templates/template-card.html`, "utf-8");
 const templateProduct = fs.readFileSync(`${__dirname}/templates/template-product.html`, "utf-8");
@@ -43,33 +34,39 @@ const templateProduct = fs.readFileSync(`${__dirname}/templates/template-product
 const dataJson = fs.readFileSync(`${__dirname}/dev-data/data.json`, "utf-8");
 const dataObj = JSON.parse(dataJson);
 
+const slugs = dataObj.map((el) => slugify(el.productName, { lower: true }));
+console.log(slugs);
+
 const server = http.createServer((req, res) => {
-    const pathName = req.url;
+    const { query, pathname } = url.parse(req.url, true);
 
     // Api
-    if (pathName === "/api") {
+    if (pathname === "/api") {
         res.writeHead(200, { "content-type": "application/json" });
         res.end(dataJson);
     }
 
     // Page overview
-    else if (pathName === "/" || pathName === "/overview") {
+    else if (pathname === "/" || pathname === "/overview") {
         res.writeHead(200, { "content-type": "text/html" });
         const cardsHtml = dataObj.map((el) => replaceTemplate(templateCard, el)).join("");
-        const updatedTemplate = templateOverview.replace("{%PRODUCT_CARDS%}", cardsHtml);
-        res.end(updatedTemplate);
+        const output = templateOverview.replace("{%PRODUCT_CARDS%}", cardsHtml);
+        res.end(output);
     }
-    
+
     // Page product
-    else if (pathName === "/product") {
-        res.end("PRODUCT");
+    else if (pathname === "/product") {
+        const product = dataObj[query.id];
+        res.writeHead(200, { "content-type": "text/html" });
+        const output = replaceTemplate(templateProduct, product);
+        res.end(output);
     }
-    
+
     // Page not found
     else {
         res.writeHead(404, {
             "content-type": "text/html",
-            "my-header": "Hello headers!"
+            "my-header": "Hello headers!",
         });
         res.end("<h1>404 Page not found</h1>");
     }
@@ -77,4 +74,4 @@ const server = http.createServer((req, res) => {
 
 server.listen(8000, "127.0.0.1", () => {
     console.log("Listening to requests on port 8000");
-})
+});
