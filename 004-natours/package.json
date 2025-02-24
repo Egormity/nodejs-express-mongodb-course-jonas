@@ -9,6 +9,7 @@
     "license": "ISC",
     "description": "",
     "dependencies": {
+        "@trivago/prettier-plugin-sort-imports": "^5.2.2",
         "dotenv": "^16.4.7",
         "express": "^4.21.2",
         "mongoose": "^5.13.23",
@@ -20,7 +21,6 @@
         "eslint-plugin-import": "^2.31.0",
         "eslint-plugin-jsx-a11y": "^6.10.2",
         "eslint-plugin-node": "^11.1.0",
-        "eslint-plugin-prettier": "^5.2.3",
         "eslint-plugin-react": "^7.37.4",
         "prettier": "^3.4.2"
     }
