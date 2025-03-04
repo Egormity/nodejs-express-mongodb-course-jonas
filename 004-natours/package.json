@@ -3,7 +3,11 @@
     "version": "1.0.0",
     "main": "app.js",
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "start": "nodemon server.js",
+        "DELETE-TOURS-DATA": "node dev-data/data/import-dev-data.js --delete",
+        "IMPORT-TOURS-DATA": "node dev-data/data/import-dev-data.js --import",
+        "debug": "ndb server.js"
     },
     "author": "",
     "license": "ISC",
@@ -13,7 +17,9 @@
         "dotenv": "^16.4.7",
         "express": "^4.21.2",
         "mongoose": "^5.13.23",
-        "morgan": "^1.10.0"
+        "morgan": "^1.10.0",
+        "slugify": "^1.6.6",
+        "validator": "^13.12.0"
     },
     "devDependencies": {
         "eslint": "^8.57.1",

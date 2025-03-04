@@ -1,0 +1,49 @@
+const UtilAppError = require("../utils/utilAppError");
+
+//
+const sendErrorDev = (err, res) =>
+    res.status(err.statusCode).json({
+        status: err.status,
+        message: err.message,
+        stack: err.stack,
+    });
+const sendErrorProd = (err, res) => {
+    if (err.isOperational) {
+        res.status(err.statusCode).json({
+            status: err.status,
+            message: err.message,
+        });
+    } else
+        res.status(500).json({
+            status: "error",
+            message: "Something went wrong.",
+        });
+};
+
+//
+const handleCastError = err => new UtilAppError(`Invalid ${err.path}: ${err.value}.`, 400);
+const handleDuplicateKey = err => {
+    const duplicate = err.msg.match(/(['"])(\\?.)*?\1/)[0];
+    return new UtilAppError(` ${duplicate}. Please, use another key`, 404);
+};
+const handleValidationError = err => {
+    const errors = Object.values(err.errors).map(error => error.message);
+    return new UtilAppError(`Invalid input data ${errors.join(". ")}`);
+};
+
+//
+module.exports = (err, req, res, next) => {
+    err.statusCode = err.statusCode || 500;
+    err.status = err.status || "error";
+
+    if (process.env.NODE_ENV === "development") sendErrorDev(err, res);
+    else {
+        let errCopy = { ...err };
+
+        if (errCopy.name === "CastError") errCopy = handleCastError(errCopy);
+        if (errCopy.code === 11000) errCopy = handleDuplicateKey(errCopy);
+        if (errCopy.name === "ValidationError") errCopy = handleValidationError(errCopy);
+
+        sendErrorProd(errCopy, res);
+    }
+};
