@@ -7,6 +7,8 @@ const sendErrorDev = (err, res) =>
         message: err.message,
         stack: err.stack,
     });
+
+//
 const sendErrorProd = (err, res) => {
     if (err.isOperational) {
         res.status(err.statusCode).json({
@@ -30,6 +32,8 @@ const handleValidationError = err => {
     const errors = Object.values(err.errors).map(error => error.message);
     return new UtilAppError(`Invalid input data ${errors.join(". ")}`);
 };
+const handleJWTError = () => new UtilAppError("Invalid token. Please login again", 401);
+const handleJWTExpired = () => new UtilAppError("Your token has expired. Please login again", 401);
 
 //
 module.exports = (err, req, res, next) => {
@@ -43,6 +47,8 @@ module.exports = (err, req, res, next) => {
         if (errCopy.name === "CastError") errCopy = handleCastError(errCopy);
         if (errCopy.code === 11000) errCopy = handleDuplicateKey(errCopy);
         if (errCopy.name === "ValidationError") errCopy = handleValidationError(errCopy);
+        if (errCopy.name === "JsonWebTokenError") errCopy = handleJWTError();
+        if (errCopy.name === "TokenExpiredError") errCopy = handleJWTExpired();
 
         sendErrorProd(errCopy, res);
     }

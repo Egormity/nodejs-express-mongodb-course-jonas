@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 //
 process.on("uncaughtException", err => {
     console.log(err.name, err.message);
+    console.log(err.stack);
     console.log("Uncaught rejection 💥 Shutting down the server...");
     process.exit(1);
 });

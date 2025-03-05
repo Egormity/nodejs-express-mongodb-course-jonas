@@ -103,7 +103,7 @@ schemaTour.pre(/^find/, function (next) {
 
 // query middleware
 schemaTour.post(/^find/, function (docs, next) {
-    console.log(docs);
+    // console.log(docs);
     next();
 });
 
