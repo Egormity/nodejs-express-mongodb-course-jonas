@@ -16,6 +16,11 @@ const schemaUser = new mongoose.Schema({
         validate: [validator.isEmail, "An email must be valid"],
     },
     photo: String,
+    role: {
+        type: String,
+        enum: ["user", "guide", "lead-guide", "admin"],
+        default: "user",
+    },
     password: {
         type: String,
         required: [true, "A user must have a password"],
@@ -33,6 +38,10 @@ const schemaUser = new mongoose.Schema({
         ],
         select: false,
     },
+    passwordChangedAt: {
+        type: Date,
+        default: Date.now,
+    },
 });
 
 //
@@ -47,6 +56,18 @@ schemaUser.pre("save", async function (next) {
 schemaUser.methods.isCorrectPassword = async (candidatePassword, userPassword) => {
     const result = await bcrypt.compare(candidatePassword, userPassword);
     return result;
+};
+
+//
+schemaUser.methods.changedPasswordAfter = function (JWTTimestamp) {
+    // 1. If an old user has never changed the password
+    if (!this.passwordChangedAt) return false;
+
+    // 2. If token time if before the passwordChangedAt return true
+    if (new Date(this.passwordChangedAt).getTime() > JWTTimestamp * 1000) return true;
+
+    // 3. If ok return not changed
+    return false;
 };
 
 //

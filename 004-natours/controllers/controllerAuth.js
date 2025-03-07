@@ -14,10 +14,11 @@ const generateSignToken = id =>
 //
 exports.signup = utilCatchAsync(async (req, res, next) => {
     const data = await ModelUser.create({
-        name: req.body.name,
-        email: req.body.email,
-        password: req.body.password,
-        passwordConfirm: req.body.passwordConfirm,
+        // name: req.body.name,
+        // email: req.body.email,
+        // password: req.body.password,
+        // passwordConfirm: req.body.passwordConfirm,
+        ...req.body,
     });
     const token = generateSignToken(data._id);
     res.status(201).json({
@@ -59,12 +60,25 @@ exports.protect = utilCatchAsync(async (req, res, next) => {
 
     // 2. Validate the token
     const decoded = await util.promisify(jwt.verify)(token, process.env.JWT_SECRET);
-    console.log(decoded);
 
     // 3. Check if user still exists
+    const freshUser = await ModelUser.findById(decoded.id);
+    if (!freshUser) return next(new UtilAppError("The user no longer exists", 401));
 
     // 4. Check if user checked the password after the token was issued
+    if (freshUser.changedPasswordAfter(decoded.iat))
+        return next(new UtilAppError("The password has been recently changed", 401));
 
     // 5.
+    req.data = freshUser;
     next();
 });
+
+//
+exports.restrictTo = (...roles) => {
+    return utilCatchAsync(async (req, res, next) => {
+        if (!roles.includes(req.data.role))
+            return next(new UtilAppError("You do not have the permission to perform this action", 403));
+        next();
+    });
+};
