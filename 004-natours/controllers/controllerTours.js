@@ -1,7 +1,9 @@
 const ModelTour = require("../models/modelTour");
-const utilCatchAsync = require("../utils/utilCatchAsync");
-const UtilApiFeatures = require("../utils/utilApiFeatures");
-const UtilAppError = require("../utils/utilAppError");
+
+const UtilApiFeatures = require("../utils/classes/utilApiFeatures");
+const UtilAppError = require("../utils/classes/utilAppError");
+
+const utilCatchAsync = require("../utils/functions/utilCatchAsync");
 
 //
 exports.aliasPopularTours = (req, res, next) => {

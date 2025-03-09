@@ -1,4 +1,4 @@
-const UtilAppError = require("../utils/utilAppError");
+const UtilAppError = require("../utils/classes/utilAppError");
 
 //
 const sendErrorDev = (err, res) =>
@@ -26,7 +26,7 @@ const sendErrorProd = (err, res) => {
 const handleCastError = err => new UtilAppError(`Invalid ${err.path}: ${err.value}.`, 400);
 const handleDuplicateKey = err => {
     const duplicate = err.msg.match(/(['"])(\\?.)*?\1/)[0];
-    return new UtilAppError(` ${duplicate}. Please, use another key`, 404);
+    return new UtilAppError(`${duplicate}. Please, use another key`, 404);
 };
 const handleValidationError = err => {
     const errors = Object.values(err.errors).map(error => error.message);

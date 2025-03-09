@@ -1,3 +1,5 @@
+const crypto = require("crypto");
+
 const mongoose = require("mongoose");
 const validator = require("validator");
 const bcrypt = require("bcryptjs");
@@ -40,8 +42,21 @@ const schemaUser = new mongoose.Schema({
     },
     passwordChangedAt: {
         type: Date,
-        default: Date.now,
+        default: Date.now(),
     },
+    passwordResetToken: String,
+    passwordResetExpires: Date,
+    active: {
+        type: Boolean,
+        default: true,
+        select: false,
+    },
+});
+
+//
+schemaUser.pre(/^find/, function (next) {
+    this.find({ active: { $ne: false } });
+    next();
 });
 
 //
@@ -49,6 +64,7 @@ schemaUser.pre("save", async function (next) {
     if (!this.isModified("password")) return next();
     this.password = await bcrypt.hash(this.password, 12);
     this.passwordConfirm = undefined;
+    this.passwordChangedAt = Date.now() - 1000 * 60;
     next();
 });
 
@@ -71,4 +87,17 @@ schemaUser.methods.changedPasswordAfter = function (JWTTimestamp) {
 };
 
 //
-module.exports = mongoose.model("User", schemaUser);
+schemaUser.methods.createPasswordResetToken = function () {
+    const token = crypto.randomBytes(32).toString("hex");
+    this.passwordResetToken = crypto.createHash("sha256").update(token).digest("hex");
+    this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+    // console.log({
+    //     token,
+    //     passwordResetToken: this.passwordResetToken,
+    //     passwordResetExpires: this.passwordResetExpires,
+    // });
+    return token;
+};
+
+//
+module.exports = mongoose.model("ModelUser", schemaUser);

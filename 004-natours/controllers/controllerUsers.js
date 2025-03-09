@@ -1,5 +1,8 @@
 const modelUser = require("../models/modelUser");
-const utilCatchAsync = require("../utils/utilCatchAsync");
+
+const UtilAppError = require("../utils/classes/utilAppError");
+
+const utilCatchAsync = require("../utils/functions/utilCatchAsync");
 
 //
 exports.getUsers = utilCatchAsync(async (req, res) => {
