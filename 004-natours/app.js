@@ -32,7 +32,7 @@ app.use(
 );
 
 // Enable json responses
-app.use(express.json({ limit: "10kb" }));
+app.use(express.json({ limit: "100kb" }));
 
 // Data sanitization against noSQL query injection
 app.use(mongoSanitize());

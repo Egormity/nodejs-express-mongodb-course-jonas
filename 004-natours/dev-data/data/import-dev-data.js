@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 
 //
 const ModelTour = require("../../models/modelTour");
-dotenv.config({ path: "./config.env" });
+dotenv.config({ path: "./.env" });
 
 //
 const DB = process.env.DB_URL.replace("<db_password>", process.env.DB_PASSWORD);
@@ -20,12 +20,12 @@ mongoose
     });
 
 //
-const tours = JSON.parse(fs.readFileSync(`${__dirname}/tours-simple.json`, "utf-8"));
+const tours = JSON.parse(fs.readFileSync(`${__dirname}/tours.json`, "utf-8"));
 
 //
 const importData = async () => {
     try {
-        await ModelTour.create(tours);
+        await ModelTour.createMany(tours);
         console.log("Data successfully loader");
     } catch (error) {
         console.log(error);

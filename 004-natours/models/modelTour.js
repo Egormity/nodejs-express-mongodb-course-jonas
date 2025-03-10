@@ -77,6 +77,31 @@ const schemaTour = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
+        startLocation: {
+            // geoJSON
+            type: {
+                type: String,
+                default: "Point",
+                enum: ["Point"],
+            },
+            coordinates: [Number],
+            address: String,
+            description: String,
+        },
+        locations: [
+            {
+                type: {
+                    type: String,
+                    default: "Point",
+                    enum: ["Point"],
+                },
+                coordinates: [Number],
+                address: String,
+                description: String,
+                day: Number,
+            },
+        ],
+        guides: [{ type: mongoose.Schema.ObjectId, ref: "ModelUser" }],
     },
     {
         toJSON: { virtuals: true },
@@ -84,7 +109,7 @@ const schemaTour = new mongoose.Schema(
     },
 );
 
-//
+// Calculate the durationWeeks for each created tour
 schemaTour.virtual("durationWeeks").get(function () {
     return this.duration / 7;
 });
@@ -98,6 +123,10 @@ schemaTour.pre("save", function (next) {
 // query middleware
 schemaTour.pre(/^find/, function (next) {
     this.find({ secretTour: { $ne: true } });
+    this.populate({
+        path: "guides",
+        select: "-__v -passwordChangedAt",
+    });
     next();
 });
 

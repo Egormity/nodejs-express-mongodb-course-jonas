@@ -61,8 +61,9 @@ exports.protect = utilCatchAsync(async (req, res, next) => {
 
 //
 exports.restrictTo = (...roles) => {
+    console.log(roles);
     return utilCatchAsync(async (req, res, next) => {
-        if (!roles.includes(req.data.role))
+        if (roles.length > 0 && !roles.includes(req.user.role))
             return next(new UtilAppError("You do not have the permission to perform this action", 403));
         next();
     });
