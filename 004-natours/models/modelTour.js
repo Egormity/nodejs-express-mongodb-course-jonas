@@ -114,6 +114,13 @@ schemaTour.virtual("durationWeeks").get(function () {
     return this.duration / 7;
 });
 
+// Virtual populate
+schemaTour.virtual("reviews", {
+    ref: "ModelReview",
+    localField: "_id",
+    foreignField: "tour",
+});
+
 // document middlewares // .pre runs before .save() and .create()
 schemaTour.pre("save", function (next) {
     this.slug = slugify(this.name, { lower: true });
@@ -127,12 +134,6 @@ schemaTour.pre(/^find/, function (next) {
         path: "guides",
         select: "-__v -passwordChangedAt",
     });
-    next();
-});
-
-// query middleware
-schemaTour.post(/^find/, function (docs, next) {
-    // console.log(docs);
     next();
 });
 

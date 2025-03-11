@@ -4,6 +4,7 @@ const UtilApiFeatures = require("../utils/classes/utilApiFeatures");
 const UtilAppError = require("../utils/classes/utilAppError");
 
 const utilCatchAsync = require("../utils/functions/utilCatchAsync");
+const utilSendResJson = require("../utils/functions/utilSendResJson");
 
 //
 exports.aliasPopularTours = (req, res, next) => {
@@ -15,23 +16,23 @@ exports.aliasPopularTours = (req, res, next) => {
 
 //
 exports.getTours = utilCatchAsync(async (req, res, next) => {
-    const features = new UtilApiFeatures(ModelTour.find(), req.query).filter().sort().limit().paginate();
+    const features = new UtilApiFeatures(ModelTour.find(), req.query).filter().sort().limit(); // .paginate();
     const data = await features.query;
-    res.status(200).json({ status: "success", data: { data } });
+    utilSendResJson({ res, statusCode: 200, data });
 });
 
 //
 exports.getTour = utilCatchAsync(async (req, res, next) => {
     const { id } = req.params;
-    const data = await ModelTour.findById(id);
+    const data = await ModelTour.findById(id).populate("reviews");
     if (!data) return next(new UtilAppError(`No tours found with id: ${id}`));
-    res.status(200).json({ status: "success", data: { data } });
+    utilSendResJson({ res, statusCode: 200, data });
 });
 
 //
 exports.postTour = utilCatchAsync(async (req, res, next) => {
     const data = await ModelTour.create(req.body);
-    res.status(201).json({ status: "success", data: { data } });
+    utilSendResJson({ res, statusCode: 201, data });
 });
 
 //
@@ -40,13 +41,13 @@ exports.patchTour = utilCatchAsync(async (req, res, next) => {
         new: true,
         runValidators: true,
     });
-    res.status(201).json({ status: "success", data: { data } });
+    utilSendResJson({ res, statusCode: 201, data });
 });
 
 //
 exports.deleteTour = utilCatchAsync(async (req, res, next) => {
     const data = await ModelTour.findByIdAndDelete(req.params.id);
-    res.status(204).json({ status: "success", data: { data } });
+    utilSendResJson({ res, statusCode: 204, data });
 });
 
 //
@@ -67,7 +68,7 @@ exports.getToursStats = utilCatchAsync(async (req, res, next) => {
             $sort: { avgPrice: 1 },
         },
     ]);
-    res.status(200).json({ status: "success", data: { data } });
+    utilSendResJson({ res, statusCode: 200, data });
 });
 
 //
@@ -102,5 +103,5 @@ exports.getMonthlyPlan = utilCatchAsync(async (req, res, next) => {
             $sort: { month: 1, numTourStarts: 1 },
         },
     ]);
-    res.status(200).json({ status: "success", data: { data } });
+    utilSendResJson({ res, statusCode: 200, data });
 });

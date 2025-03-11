@@ -7,6 +7,8 @@ const mongoSanitize = require("express-mongo-sanitize");
 const routerTours = require("./routes/routesTours");
 const routerUsers = require("./routes/routesUsers");
 const routerAuth = require("./routes/routesAuth");
+const routerReviews = require("./routes/routesReviews");
+
 const controllerErrors = require("./controllers/controllerErrors");
 const hpp = require("hpp");
 
@@ -50,9 +52,10 @@ app.use((req, res, next) => {
 });
 
 // Routes
-app.use("/api/v1/tours", routerTours);
-app.use("/api/v1/users", routerUsers);
 app.use("/api/v1/auth", routerAuth);
+app.use("/api/v1/users", routerUsers);
+app.use("/api/v1/tours", routerTours);
+app.use("/api/v1/reviews", routerReviews);
 
 // Route not found
 app.all("*", (req, res, next) => {

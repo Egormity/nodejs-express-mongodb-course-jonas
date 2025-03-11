@@ -10,27 +10,26 @@ const {
     getToursStats,
     getMonthlyPlan,
 } = require("../controllers/controllerTours");
-const { protect, restrictTo } = require("../controllers/controllerAuth");
+const { protect } = require("../controllers/controllerAuth");
 
-//
+const routerReviews = require("./routesReviews");
+
+// Create a router
 const router = express.Router();
 
-//
-router.route("/top-5").get(aliasPopularTours, getTours);
+// Merge with reviews router
+router.use("/:tourId/reviews", routerReviews);
 
-//
-router.route("/").get(protect, getTours).post(postTour);
-router
-    .route("/:id")
-    .get(getTour)
-    .patch(patchTour)
-    .delete(protect, restrictTo("admin", "lead-guide"), deleteTour);
+// Query
+router.route("/top-5").get(protect, aliasPopularTours, getTours);
 
-//
-router.route("/stats").get(getToursStats);
+// Base
+router.route("/").get(protect, getTours).post(protect, postTour);
+router.route("/:id").get(protect, getTour).patch(protect, patchTour).delete(protect, deleteTour);
 
-//
-router.route("/monthly-plan/:year").get(getMonthlyPlan);
+// Aggregations
+router.route("/stats").get(protect, getToursStats);
+router.route("/monthly-plan/:year").get(protect, getMonthlyPlan);
 
-//
+// Export default
 module.exports = router;
