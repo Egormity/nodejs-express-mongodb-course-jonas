@@ -1,31 +1,26 @@
 const express = require("express");
 
-const {
-    protect,
-    signup,
-    login,
-    forgotPassword,
-    resetPassword,
-    updateMyPassword,
-    updateMe,
-    deleteMe,
-} = require("../controllers/controllerAuth");
+const ControllerAuth = require("../controllers/controllerAuth");
+const ControllerUsers = require("../controllers/controllerUsers");
 
 //
 const router = express.Router();
 
 //
-router.post("/signup", signup);
-router.post("/login", login);
+router.post("/signup", ControllerAuth.signup);
+router.post("/login", ControllerAuth.login);
 
 //
-router.post("/forgotPassword", forgotPassword);
-router.patch("/resetPassword/:token", resetPassword);
+router.post("/forgotPassword", ControllerAuth.forgotPassword);
+router.patch("/resetPassword/:token", ControllerAuth.resetPassword);
 
 //
-router.patch("/updateMyPassword", protect, updateMyPassword);
-router.patch("/updateMe", protect, updateMe);
-router.patch("/deleteMe", protect, deleteMe);
+router.get("/getMe", ControllerAuth.protect, ControllerAuth.middlewareGetMe, ControllerUsers.getUser);
+
+//
+router.patch("/updateMyPassword", ControllerAuth.protect, ControllerAuth.updateMyPassword);
+router.patch("/updateMe", ControllerAuth.protect, ControllerAuth.updateMe);
+router.patch("/deleteMe", ControllerAuth.protect, ControllerAuth.deleteMe);
 
 //
 module.exports = router;

@@ -150,6 +150,12 @@ exports.resetPassword = utilCatchAsync(async (req, res, next) => {
 });
 
 //
+exports.middlewareGetMe = (req, res, next) => {
+    req.params.id = req.user._id;
+    next();
+};
+
+//
 exports.updateMyPassword = utilCatchAsync(async (req, res, next) => {
     // 1. Get the user
     const user = await ModelUser.findById(req.user.id).select("+password");

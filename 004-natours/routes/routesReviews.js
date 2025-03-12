@@ -1,14 +1,21 @@
 const express = require("express");
 
-const { getReviews, getReview, postReview } = require("../controllers/controllerReviews");
-const { protect } = require("../controllers/controllerAuth");
+const ControllerReviews = require("../controllers/controllerReviews");
+const ControllerAuth = require("../controllers/controllerAuth");
 
 //
 const router = express.Router({ mergeParams: true });
 
+// Protect all routes bellow
+router.use(ControllerAuth.protect);
+
 //
-router.route("/").get(protect, getReviews).post(protect, postReview);
-router.route("/:id").get(protect, getReview);
+router.route("/").get(ControllerReviews.getReviews).post(ControllerReviews.postReview);
+router
+    .route("/:id")
+    .get(ControllerReviews.getReview)
+    .patch(ControllerReviews.middlewareSetTourUserIds, ControllerReviews.patchReview)
+    .delete(ControllerReviews.deleteReview);
 
 //
 module.exports = router;

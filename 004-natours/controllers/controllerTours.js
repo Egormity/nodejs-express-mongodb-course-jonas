@@ -1,10 +1,12 @@
-const ModelTour = require("../models/modelTour");
-
 const UtilApiFeatures = require("../utils/classes/utilApiFeatures");
 const UtilAppError = require("../utils/classes/utilAppError");
 
 const utilCatchAsync = require("../utils/functions/utilCatchAsync");
 const utilSendResJson = require("../utils/functions/utilSendResJson");
+
+const ModelTour = require("../models/modelTour");
+
+const HandlerFactory = require("./handlerFactory");
 
 //
 exports.aliasPopularTours = (req, res, next) => {
@@ -15,40 +17,11 @@ exports.aliasPopularTours = (req, res, next) => {
 };
 
 //
-exports.getTours = utilCatchAsync(async (req, res, next) => {
-    const features = new UtilApiFeatures(ModelTour.find(), req.query).filter().sort().limit(); // .paginate();
-    const data = await features.query;
-    utilSendResJson({ res, statusCode: 200, data });
-});
-
-//
-exports.getTour = utilCatchAsync(async (req, res, next) => {
-    const { id } = req.params;
-    const data = await ModelTour.findById(id).populate("reviews");
-    if (!data) return next(new UtilAppError(`No tours found with id: ${id}`));
-    utilSendResJson({ res, statusCode: 200, data });
-});
-
-//
-exports.postTour = utilCatchAsync(async (req, res, next) => {
-    const data = await ModelTour.create(req.body);
-    utilSendResJson({ res, statusCode: 201, data });
-});
-
-//
-exports.patchTour = utilCatchAsync(async (req, res, next) => {
-    const data = await ModelTour.findByIdAndUpdate(req.params.id, req.body, {
-        new: true,
-        runValidators: true,
-    });
-    utilSendResJson({ res, statusCode: 201, data });
-});
-
-//
-exports.deleteTour = utilCatchAsync(async (req, res, next) => {
-    const data = await ModelTour.findByIdAndDelete(req.params.id);
-    utilSendResJson({ res, statusCode: 204, data });
-});
+exports.getTours = HandlerFactory.getAll({ Model: ModelTour });
+exports.getTour = HandlerFactory.getOne({ Model: ModelTour, populateOptions: { path: "reviews" } });
+exports.postTour = HandlerFactory.postOne({ Model: ModelTour });
+exports.patchTour = HandlerFactory.patchOne({ Model: ModelTour });
+exports.deleteTour = HandlerFactory.deleteOne({ Model: ModelTour });
 
 //
 exports.getToursStats = utilCatchAsync(async (req, res, next) => {
