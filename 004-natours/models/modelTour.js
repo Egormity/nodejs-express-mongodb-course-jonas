@@ -31,9 +31,10 @@ const schemaTour = new mongoose.Schema(
         },
         ratingsAverage: {
             type: Number,
-            default: 4.5,
+            default: 0,
             min: [1, "A rating must be >= 1"],
             max: [5, "A rating must be <= 5"],
+            set: val => Math.round(val * 10) / 10,
         },
         ratingsQuantity: {
             type: Number,
@@ -66,11 +67,7 @@ const schemaTour = new mongoose.Schema(
             required: [true, "A tour must have an image cover"],
         },
         images: [String],
-        createdAt: {
-            type: Date,
-            default: Date.now(),
-            // select: false,
-        },
+
         startDates: [Date],
         slug: String,
         secretTour: {
@@ -102,12 +99,22 @@ const schemaTour = new mongoose.Schema(
             },
         ],
         guides: [{ type: mongoose.Schema.ObjectId, ref: "ModelUser" }],
+        createdAt: {
+            type: Date,
+            default: Date.now(),
+        },
     },
     {
         toJSON: { virtuals: true },
         toObject: { virtuals: true },
     },
 );
+
+// Mongo indexes
+schemaTour.index({ price: 1 });
+schemaTour.index({ price: 1, ratingsAverage: -1 });
+schemaTour.index({ slug: 1 });
+schemaTour.index({ startLocation: "2dsphere" });
 
 // Calculate the durationWeeks for each created tour
 schemaTour.virtual("durationWeeks").get(function () {
@@ -138,10 +145,10 @@ schemaTour.pre(/^find/, function (next) {
 });
 
 // aggregation middleware
-schemaTour.pre("aggregate", function (next) {
-    this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
-    next();
-});
+// schemaTour.pre("aggregate", function (next) {
+//     this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
+//     next();
+// });
 
 //
 module.exports = mongoose.model("ModelTour", schemaTour);

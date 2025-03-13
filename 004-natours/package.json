@@ -5,8 +5,8 @@
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "start": "nodemon server.js",
-        "DELETE-TOURS-DATA": "node dev-data/data/import-dev-data.js --delete",
-        "IMPORT-TOURS-DATA": "node dev-data/data/import-dev-data.js --import",
+        "DELETE-DEV-DATA": "node dev-data/data/import-dev-data.js --delete",
+        "IMPORT-DEV-DATA": "node dev-data/data/import-dev-data.js --import",
         "debug": "ndb server.js"
     },
     "author": "",

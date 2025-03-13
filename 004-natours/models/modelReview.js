@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 
+const ModelTour = require("./modelTour");
+
 //
 const schemaReview = mongoose.Schema(
     {
@@ -27,12 +29,19 @@ const schemaReview = mongoose.Schema(
             ref: "ModelTour",
             required: [true, "A review must belong to a tour"],
         },
+        createdAt: {
+            type: Date,
+            default: Date.now(),
+        },
     },
     {
         toJSON: { virtions: true },
         toObject: { virtions: true },
     },
 );
+
+//
+schemaReview.index({ tour: 1, user: 1 }, { unique: true });
 
 // query middleware
 schemaReview.pre(/^find/, function (next) {
@@ -46,6 +55,43 @@ schemaReview.pre(/^find/, function (next) {
     //     select: "-__v",
     // });
     next();
+});
+
+//
+schemaReview.statics.calcAverageRatings = async function (tourId) {
+    const stats = await this.aggregate([
+        {
+            $match: { tour: tourId },
+        },
+        {
+            $group: {
+                _id: "$tour",
+                numRatings: { $sum: 1 },
+                avgRating: { $avg: "$rating" },
+            },
+        },
+    ]);
+    await ModelTour.findByIdAndUpdate(tourId, {
+        ratingsQuantity: stats?.[0]?.numRatings || 0,
+        ratingsAverage: stats?.[0]?.avgRating || 0,
+    });
+};
+
+//
+schemaReview.post("save", function () {
+    this.constructor.calcAverageRatings(this.tour);
+});
+
+//
+schemaReview.pre(/^findOneAnd/, async function (next) {
+    this.review = await this.findOne();
+    next();
+});
+
+//
+schemaReview.post(/^findOneAnd/, async function () {
+    console.log(this);
+    await this.review.constructor(this.review.tour);
 });
 
 //

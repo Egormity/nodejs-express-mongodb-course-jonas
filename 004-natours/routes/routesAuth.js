@@ -11,16 +11,16 @@ router.post("/signup", ControllerAuth.signup);
 router.post("/login", ControllerAuth.login);
 
 //
-router.post("/forgotPassword", ControllerAuth.forgotPassword);
-router.patch("/resetPassword/:token", ControllerAuth.resetPassword);
+router.post("/forgot-password", ControllerAuth.forgotPassword);
+router.patch("/reset-password/:token", ControllerAuth.resetPassword);
 
 //
 router.get("/getMe", ControllerAuth.protect, ControllerAuth.middlewareGetMe, ControllerUsers.getUser);
 
 //
-router.patch("/updateMyPassword", ControllerAuth.protect, ControllerAuth.updateMyPassword);
-router.patch("/updateMe", ControllerAuth.protect, ControllerAuth.updateMe);
-router.patch("/deleteMe", ControllerAuth.protect, ControllerAuth.deleteMe);
+router.patch("/update-my-password", ControllerAuth.protect, ControllerAuth.updateMyPassword);
+router.patch("/update-me", ControllerAuth.protect, ControllerAuth.updateMe);
+router.patch("/delete-me", ControllerAuth.protect, ControllerAuth.deleteMe);
 
 //
 module.exports = router;

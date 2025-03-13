@@ -14,9 +14,6 @@ router.use(ControllerAuth.protect);
 // Merge with reviews router
 router.use("/:tourId/reviews", routerReviews);
 
-// Query
-router.route("/top-5").get(ControllerTours.aliasPopularTours, ControllerTours.getTours);
-
 // Base
 router.route("/").get(ControllerTours.getTours).post(ControllerTours.postTour);
 router
@@ -24,6 +21,13 @@ router
     .get(ControllerTours.getTour)
     .patch(ControllerTours.patchTour)
     .delete(ControllerTours.deleteTour);
+
+// Query
+router.route("/top-5").get(ControllerTours.aliasPopularTours, ControllerTours.getTours);
+
+// Geolocation
+router.route("/tours-within/:distance/center/:latLng/unit/:unit").get(ControllerTours.getToursWithin);
+router.route("/distances/:latLng/unit/:unit").get(ControllerTours.getToursDistances);
 
 // Aggregations
 router.route("/stats").get(ControllerTours.getToursStats);

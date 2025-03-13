@@ -4,10 +4,17 @@ module.exports = class UtilApiFeatures {
     }
 
     filter() {
+        //
         const queryObj = { ...this.queryString };
         const excludedFields = ["page", "limit", "sort", "fields"];
-        excludedFields.forEach((el) => delete queryObj[el]);
-        this.query.find(queryObj);
+        excludedFields.forEach(el => delete queryObj[el]);
+
+        //
+        let queryStr = JSON.stringify(queryObj);
+        queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`);
+
+        //
+        this.query = this.query.find(JSON.parse(queryStr));
         return this;
     }
 
