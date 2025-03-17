@@ -7,7 +7,9 @@
         "start": "nodemon server.js",
         "DELETE-DEV-DATA": "node dev-data/data/import-dev-data.js --delete",
         "IMPORT-DEV-DATA": "node dev-data/data/import-dev-data.js --import",
-        "debug": "ndb server.js"
+        "debug": "ndb server.js",
+        "watch:js": "parcel watch ./public/js/index.js --out-dir ./public/js --out-file bundle.js",
+        "build:js": "parcel watch ./public/js/index.js --out-dir ./public/js --out-file bundle.js"
     },
     "author": "",
     "license": "ISC",
@@ -16,6 +18,8 @@
         "node": ">=21"
     },
     "dependencies": {
+        "@babel/polyfill": "^7.12.1",
+        "axios": "^1.8.3",
         "bcryptjs": "^3.0.2",
         "dotenv": "^16.4.7",
         "express": "^4.21.2",
@@ -38,6 +42,7 @@
         "eslint-plugin-jsx-a11y": "^6.10.2",
         "eslint-plugin-node": "^11.1.0",
         "eslint-plugin-react": "^7.37.4",
+        "parcel-bundler": "^1.12.5",
         "prettier": "^3.4.2"
     }
 }

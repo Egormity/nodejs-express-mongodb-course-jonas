@@ -41,6 +41,7 @@ exports.protect = utilCatchAsync(async (req, res, next) => {
     let token;
     if (req.headers.authorization && req.headers.authorization.startsWith("Bearer "))
         token = req.headers.authorization.split(" ")[1];
+    if (req.cookie?.jwt) token = req.cookies.jwt;
     if (!token) return next(new UtilAppError("Unauthorized", 401));
 
     // 2. Validate the token
@@ -59,9 +60,30 @@ exports.protect = utilCatchAsync(async (req, res, next) => {
     next();
 });
 
+// Only for rendered pages, no errors
+exports.isLoggedIn = utilCatchAsync(async (req, res, next) => {
+    // 1. Verify the token
+    if (req.cookie?.jwt) {
+        try {
+            const decoded = await util.promisify(jwt.verify)(token, process.env.JWT_SECRET);
+
+            // 2. Check if user still exists
+            const user = await ModelUser.findById(decoded.id);
+            if (!user) return next();
+
+            // 3. Check if user checked the password after the token was issued
+            if (user.changedPasswordAfter(decoded.iat)) return next();
+
+            // 4. There is a logged in user
+            res.locals.user = user;
+        } catch (err) {}
+    }
+    next();
+});
+
 //
 exports.restrictTo = (...roles) => {
-    console.log(roles);
+    // console.log(roles);
     return utilCatchAsync(async (req, res, next) => {
         if (roles.length > 0 && !roles.includes(req.user.role))
             return next(new UtilAppError("You do not have the permission to perform this action", 403));
@@ -94,6 +116,14 @@ exports.login = utilCatchAsync(async (req, res, next) => {
 
     // 3. If everything is ok, send a token to the client
     createSendToken({ res, statusCode: 200, user });
+});
+
+//
+exports.logout = utilCatchAsync(async (req, res, next) => {
+    res.cookie("jwt", "logged out", {
+        expires: new Date(new Date.now() + 10 * 1000),
+    });
+    utilSendResJson({ res, statusCode: 200 });
 });
 
 //
@@ -150,7 +180,7 @@ exports.resetPassword = utilCatchAsync(async (req, res, next) => {
 });
 
 //
-exports.middlewareGetMe = (req, res, next) => {
+exports.getMe = (req, res, next) => {
     req.params.id = req.user._id;
     next();
 };

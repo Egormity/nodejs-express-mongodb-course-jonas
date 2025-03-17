@@ -35,7 +35,16 @@ if (process.env.NODE_ENV === "development") {
 }
 
 // Set security http
-app.use(helmet());
+app.use(
+    helmet({
+        contentSecurityPolicy: {
+            directives: {
+                defaultSrc: ["'self'"],
+                connectSrc: ["'self'", "http://127.0.0.1:3000"],
+            },
+        },
+    }),
+);
 
 // Limit amount of requests
 app.use(

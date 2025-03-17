@@ -1,8 +1,9 @@
-module.exports = ({ res, statusCode, data, token, message }) => {
+module.exports = ({ res, statusCode, status = "success", token, message, stack, data }) => {
     res.status(statusCode).json({
-        status: "success",
+        status,
         token,
         message,
+        stack,
         data,
     });
 };
