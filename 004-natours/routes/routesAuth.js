@@ -23,7 +23,12 @@ router.get("/get-me", ControllerAuth.getMe, ControllerUsers.getUser);
 
 //
 router.patch("/update-my-password", ControllerAuth.updateMyPassword);
-router.patch("/update-me", ControllerAuth.updateMe);
+router.patch(
+    "/update-me",
+    ControllerAuth.uploadUserPhoto,
+    ControllerAuth.resizeUserPhoto,
+    ControllerAuth.updateMe,
+);
 router.patch("/delete-me", ControllerAuth.deleteMe);
 
 //

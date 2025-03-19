@@ -1,3 +1,6 @@
+const multer = require("multer");
+const sharp = require("sharp");
+
 const utilCatchAsync = require("../utils/functions/utilCatchAsync");
 const utilSendResJson = require("../utils/functions/utilSendResJson");
 
@@ -5,6 +8,13 @@ const ModelTour = require("../models/modelTour");
 
 const HandlerFactory = require("./handlerFactory");
 const UtilAppError = require("../utils/classes/utilAppError");
+
+const multerStorage = multer.memoryStorage();
+const multerFilter = (req, file, cb) => {
+    if (file.mimetype.startsWith("image")) cb(null, true);
+    else cb(new UtilAppError("Image extension not recognized. Please upload a valid image"), false);
+};
+const upload = multer({ storage: multerStorage, fileFilter: multerFilter });
 
 //
 exports.getTours = HandlerFactory.getAll({ Model: ModelTour });
@@ -20,6 +30,41 @@ exports.aliasPopularTours = (req, res, next) => {
     req.query.fields = "name,price,ratingsAverage,difficulty,summary";
     next();
 };
+
+//
+exports.uploadTourImages = upload.fields([
+    { name: "imageCover", maxCount: 1 },
+    { name: "images", minCount: 3 },
+]);
+
+//
+exports.resizeTourImages = utilCatchAsync(async (req, res, next) => {
+    if (!req.files.imageCover || !req.file.images) return next();
+
+    // 1. Image cover
+    req.body.imageCover = `tour-${req.params.id}-${Date.now()}-cover.jpeg`;
+    await sharp(req.files.imageCover[0].buffer)
+        .resize(2000, 1333)
+        .toFormat("jpeg")
+        .jpeg({ quality: 90 })
+        .toFile(`public/img/tours/${req.body.imageCover}`);
+
+    // 2. Images
+    await Promise.all(
+        req.files.images.map((file, i) => {
+            const filename = `tour-${req.params.id}-${Date.now()}-${i + 1}.jpeg`;
+            req.body.images.push(filename);
+            return sharp(file.buffer)
+                .resize(2000, 1333)
+                .toFormat("jpeg")
+                .jpeg({ quality: 90 })
+                .toFile(`public/img/tours/${filename}`);
+        }),
+    );
+
+    // 3. Update
+    next();
+});
 
 //
 exports.getToursWithin = utilCatchAsync(async (req, res, next) => {

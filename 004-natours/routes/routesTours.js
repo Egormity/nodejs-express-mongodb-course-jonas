@@ -19,7 +19,7 @@ router.route("/").get(ControllerTours.getTours).post(ControllerTours.postTour);
 router
     .route("/:id")
     .get(ControllerTours.getTour)
-    .patch(ControllerTours.patchTour)
+    .patch(ControllerTours.uploadTourImages, ControllerTours.resizeTourImages, ControllerTours.patchTour)
     .delete(ControllerTours.deleteTour);
 
 // Query

@@ -2,15 +2,46 @@ const crypto = require("crypto");
 const util = require("util");
 
 const jwt = require("jsonwebtoken");
+const multer = require("multer");
+const sharp = require("sharp");
 
 const ModelUser = require("../models/modelUser");
 
 const UtilAppError = require("../utils/classes/utilAppError");
 
+const UtilEmail = require("../utils/classes/utilEmail");
+
 const utilCatchAsync = require("../utils/functions/utilCatchAsync");
-const utilSendEmail = require("../utils/functions/utilSendEmail");
 const utilFilterObj = require("../utils/functions/utilFilterObj");
 const utilSendResJson = require("../utils/functions/utilSendResJson");
+
+const multerStorage = multer.memoryStorage(); // = multer.diskStorage({
+//     destination: (req, file, cb) => cb(null, "public/img/users"),
+//     filename: (req, file, cb) => {
+//         const ext = file.mimetype.split("/")[1];
+//         cb(null, `user-${req.user.id}-${Date.now()}.${ext}`);
+//     },
+// });
+const multerFilter = (req, file, cb) => {
+    if (file.mimetype.startsWith("image")) cb(null, true);
+    else cb(new UtilAppError("Image extension not recognized. Please upload a valid image"), false);
+};
+const upload = multer({ storage: multerStorage, fileFilter: multerFilter });
+
+//
+exports.uploadUserPhoto = upload.single("photo");
+
+//
+exports.resizeUserPhoto = utilCatchAsync(async (req, res, next) => {
+    if (!req.file) return next();
+    req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`;
+    await sharp(req.file.buffer)
+        .resize(500, 500)
+        .toFormat("jpeg")
+        .jpeg({ quality: 90 })
+        .toFile(`public/img/users/${req.file.filename}`);
+    next();
+});
 
 //
 const generateSignToken = id =>
@@ -41,7 +72,7 @@ exports.protect = utilCatchAsync(async (req, res, next) => {
     let token;
     if (req.headers.authorization && req.headers.authorization.startsWith("Bearer "))
         token = req.headers.authorization.split(" ")[1];
-    if (req.cookie?.jwt) token = req.cookies.jwt;
+    if (req.headers.cookie?.jwt) token = req.cookies.jwt;
     if (!token) return next(new UtilAppError("Unauthorized", 401));
 
     // 2. Validate the token
@@ -93,13 +124,15 @@ exports.restrictTo = (...roles) => {
 
 //
 exports.signup = utilCatchAsync(async (req, res, next) => {
-    const user = await ModelUser.create({
+    const newUser = await ModelUser.create({
         // name: req.body.name,
         // email: req.body.email,
         // password: req.body.password,
         // passwordConfirm: req.body.passwordConfirm,
         ...req.body,
     });
+    const url = `${req.protocol}://${req.get("host")}/me`;
+    await new UtilEmail({ user: newUser, url }).sendWelcome();
     createSendToken({ res, statusCode: 201, user });
 });
 
@@ -136,16 +169,10 @@ exports.forgotPassword = utilCatchAsync(async (req, res, next) => {
     const token = user.createPasswordResetToken();
     await user.save({ validateBeforeSave: false });
 
-    // 3. Send an email to the user
-    const resetURL = `${req.protocol}://${req.get("host")}/api/v1/users/resetPassword/${token}`;
-    const text = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to: ${resetURL}.\/If you didn't request this action, please ignore this email.`;
-
     try {
-        await utilSendEmail({
-            email: user.email,
-            subject: "Your password reset token (valid only for 10 minutes)",
-            text,
-        });
+        // 3. Send an email to the user
+        const resetURL = `${req.protocol}://${req.get("host")}/api/v1/users/resetPassword/${token}`;
+        await new UtilEmail({ user, url: resetURL }).sendPasswordReset();
         utilSendResJson({ res, statusCode: 200, message: "Token sent to the email" });
     } catch (error) {
         user.passwordResetToken = undefined;
@@ -211,6 +238,7 @@ exports.updateMe = utilCatchAsync(async (req, res, next) => {
 
     // 2. Filter the not allowed fields
     const filtered = utilFilterObj(req.body, "name", "email");
+    if (req.file) filtered.photo = req.file.filename;
 
     // 3. Update the user
     const user = await ModelUser.findByIdAndUpdate(req.user._id, filtered, {
