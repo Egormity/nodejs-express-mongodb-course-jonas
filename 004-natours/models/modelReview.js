@@ -1,5 +1,11 @@
 const mongoose = require("mongoose");
 
+const {
+    SCHEMA_NAME_TOUR,
+    SCHEMA_NAME_USER,
+    SCHEMA_NAME_REVIEW,
+} = require("../utils/constants/constants.mongo");
+
 const ModelTour = require("./modelTour");
 
 //
@@ -21,12 +27,12 @@ const schemaReview = mongoose.Schema(
         },
         user: {
             type: mongoose.Schema.ObjectId,
-            ref: "ModelUser",
+            ref: SCHEMA_NAME_USER,
             required: [true, "A review must belong to a user"],
         },
         tour: {
             type: mongoose.Schema.ObjectId,
-            ref: "ModelTour",
+            ref: SCHEMA_NAME_TOUR,
             required: [true, "A review must belong to a tour"],
         },
         createdAt: {
@@ -95,4 +101,4 @@ schemaReview.post(/^findOneAnd/, async function () {
 });
 
 //
-module.exports = mongoose.model("ModelReview", schemaReview);
+module.exports = mongoose.model(SCHEMA_NAME_REVIEW, schemaReview);

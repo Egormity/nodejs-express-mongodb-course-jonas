@@ -1,24 +1,36 @@
 const path = require("path");
 
+const cors = require("cors");
 const morgan = require("morgan");
 const express = require("express");
 const rateLimit = require("express-rate-limit");
 const helmet = require("helmet");
 const mongoSanitize = require("express-mongo-sanitize");
+const compression = require("compression");
 
+const routerAuth = require("./routes/routesAuth");
+const routerBookings = require("./routes/routesBookings");
+const controllerErrors = require("./controllers/controllerErrors");
+const routerReviews = require("./routes/routesReviews");
 const routerTours = require("./routes/routesTours");
 const routerUsers = require("./routes/routesUsers");
-const routerAuth = require("./routes/routesAuth");
-const routerReviews = require("./routes/routesReviews");
 const routerViews = require("./routes/routesViews");
 
-const controllerErrors = require("./controllers/controllerErrors");
 const hpp = require("hpp");
 
 const UtilAppError = require("./utils/classes/utilAppError");
 
 // Create express app
-const app = express();
+const app = express({
+    // origin: "http://127.0.0.1:3000"
+});
+
+// Enable trust proxy
+app.enable("trust proxy");
+
+// Enable cors
+app.use(cors());
+app.options("*", cors());
 
 // Set the views folder
 app.set("views", path.join(__dirname, "views"));
@@ -71,11 +83,15 @@ app.use((req, res, next) => {
     next();
 });
 
+// Compress responses
+app.use(compression());
+
 // Routes api
 app.use("/api/v1/auth", routerAuth);
-app.use("/api/v1/users", routerUsers);
-app.use("/api/v1/tours", routerTours);
+app.use("/api/v1/bookings", routerBookings);
 app.use("/api/v1/reviews", routerReviews);
+app.use("/api/v1/tours", routerTours);
+app.use("/api/v1/users", routerUsers);
 
 // Routes views
 app.use("/", routerViews);

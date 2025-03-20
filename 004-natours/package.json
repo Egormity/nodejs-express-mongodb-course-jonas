@@ -15,7 +15,7 @@
     "license": "ISC",
     "description": "",
     "engines": {
-        "node": ">=21"
+        "node": "^22"
     },
     "dependencies": {
         "@babel/polyfill": "^7.12.1",

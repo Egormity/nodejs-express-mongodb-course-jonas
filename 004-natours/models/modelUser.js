@@ -4,6 +4,8 @@ const mongoose = require("mongoose");
 const validator = require("validator");
 const bcrypt = require("bcryptjs");
 
+const { SCHEMA_NAME_USER } = require("../utils/constants/constants.mongo");
+
 //
 const schemaUser = new mongoose.Schema({
     name: {
@@ -107,4 +109,4 @@ schemaUser.methods.createPasswordResetToken = function () {
 };
 
 //
-module.exports = mongoose.model("ModelUser", schemaUser);
+module.exports = mongoose.model(SCHEMA_NAME_USER, schemaUser);

@@ -1,6 +1,12 @@
 const mongoose = require("mongoose");
 const slugify = require("slugify");
 
+const {
+    SCHEMA_NAME_TOUR,
+    SCHEMA_NAME_USER,
+    SCHEMA_NAME_REVIEW,
+} = require("../utils/constants/constants.mongo");
+
 //
 const schemaTour = new mongoose.Schema(
     {
@@ -98,7 +104,7 @@ const schemaTour = new mongoose.Schema(
                 day: Number,
             },
         ],
-        guides: [{ type: mongoose.Schema.ObjectId, ref: "ModelUser" }],
+        guides: [{ type: mongoose.Schema.ObjectId, ref: SCHEMA_NAME_USER }],
         createdAt: {
             type: Date,
             default: Date.now(),
@@ -123,7 +129,7 @@ schemaTour.virtual("durationWeeks").get(function () {
 
 // Virtual populate
 schemaTour.virtual("reviews", {
-    ref: "ModelReview",
+    ref: SCHEMA_NAME_REVIEW,
     localField: "_id",
     foreignField: "tour",
 });
@@ -151,4 +157,4 @@ schemaTour.pre(/^find/, function (next) {
 // });
 
 //
-module.exports = mongoose.model("ModelTour", schemaTour);
+module.exports = mongoose.model(SCHEMA_NAME_TOUR, schemaTour);

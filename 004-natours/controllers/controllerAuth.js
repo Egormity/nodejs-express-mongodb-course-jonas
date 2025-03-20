@@ -50,19 +50,21 @@ const generateSignToken = id =>
     });
 
 //
-const createSendToken = ({ res, statusCode, user }) => {
+const createSendToken = ({ req, res, statusCode, user }) => {
     // 1. Get the token
     const token = generateSignToken(user._id);
 
     // 2. Set the cookie
     res.cookie("jwt", token, {
         expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * process.env.JWT_COOKIE_EXPIRES_IN),
-        secure: process.env.NODE_ENV === "production",
+        secure: req.secure || req.headers["x-forwarded-proto"] === "https",
         httpOnly: true,
     });
+
+    // 3. Remove the password
     user.password = undefined;
 
-    // 3. Send the request
+    // 4. Send the request
     utilSendResJson({ res, statusCode, data: user, token });
 };
 
@@ -133,7 +135,7 @@ exports.signup = utilCatchAsync(async (req, res, next) => {
     });
     const url = `${req.protocol}://${req.get("host")}/me`;
     await new UtilEmail({ user: newUser, url }).sendWelcome();
-    createSendToken({ res, statusCode: 201, user });
+    createSendToken({ req, res, statusCode: 201, user });
 });
 
 //
@@ -148,7 +150,7 @@ exports.login = utilCatchAsync(async (req, res, next) => {
     if (!isCorrect) return next(new UtilAppError("Incorrect email or password", 401));
 
     // 3. If everything is ok, send a token to the client
-    createSendToken({ res, statusCode: 200, user });
+    createSendToken({ req, res, statusCode: 200, user });
 });
 
 //
@@ -203,7 +205,7 @@ exports.resetPassword = utilCatchAsync(async (req, res, next) => {
     // Handled by the middleware
 
     // 3. Log the user in, send JWT
-    createSendToken({ res, statusCode: 200, user });
+    createSendToken({ req, res, statusCode: 200, user });
 });
 
 //
@@ -227,7 +229,7 @@ exports.updateMyPassword = utilCatchAsync(async (req, res, next) => {
     await user.save();
 
     // 4. Log in the user, send JWT
-    createSendToken({ res, statusCode: 200, user });
+    createSendToken({ req, res, statusCode: 200, user });
 });
 
 //
